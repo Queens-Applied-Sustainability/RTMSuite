@@ -23,15 +23,19 @@
 
 import unittest
 from datetime import datetime
-from numpy import nan
+from numpy import nan, array
 from .. import interpolator
 
 
-class TestOptimizer(unittest.TestCase):
+class TestInterpolator(unittest.TestCase):
 
     def assertInterpolated(self, data_in, expected):
         out = interpolator.interpolate(data_in)
         self.assertEqual(out, expected)
+
+    def assertNumpyInterpolated(self, data_in, expected):
+        out = interpolator.interpolate(data_in)
+        self.assertTrue((out == expected).all())
 
     def testEmpty(self):
         self.assertInterpolated([[]], [[]])
@@ -42,9 +46,8 @@ class TestOptimizer(unittest.TestCase):
             [[datetime(2012, 1, 1, 0, 0), 1.0]])
 
     def testSingleNaN(self):
-        self.assertRaises(interpolator.interpolate(
-            [[datetime(2012, 1, 1, 0, 0), nan]]),
-            interpolator.NoValidDataError)
+        with self.assertRaises(interpolator.NoValidDataError):
+            interpolator.interpolate([[datetime(2012, 1, 1, 0, 0), nan]])
 
     def testLeadingNaN(self):
         self.assertInterpolated(
@@ -78,14 +81,50 @@ class TestOptimizer(unittest.TestCase):
              [datetime(2012, 1, 1, 0, 1), 0.5],
              [datetime(2012, 1, 1, 0, 2), 1.0]])
 
+    def testTwoNaNs(self):
+        self.assertInterpolated(
+            [[datetime(2012, 1, 1, 0, 0), 1.0],
+             [datetime(2012, 1, 1, 0, 1), nan],
+             [datetime(2012, 1, 1, 0, 2), nan],
+             [datetime(2012, 1, 1, 0, 3), 4.0]],
+            [[datetime(2012, 1, 1, 0, 0), 1.0],
+             [datetime(2012, 1, 1, 0, 1), 2.0],
+             [datetime(2012, 1, 1, 0, 2), 3.0],
+             [datetime(2012, 1, 1, 0, 3), 4.0]])
+
+    def testTwoNaNGaps(self):
+        self.assertInterpolated(
+            [[datetime(2012, 1, 1, 0, 0), 1.0],
+             [datetime(2012, 1, 1, 0, 1), nan],
+             [datetime(2012, 1, 1, 0, 2), 3.0],
+             [datetime(2012, 1, 1, 0, 3), nan],
+             [datetime(2012, 1, 1, 0, 4), 5.0]],
+            [[datetime(2012, 1, 1, 0, 0), 1.0],
+             [datetime(2012, 1, 1, 0, 1), 2.0],
+             [datetime(2012, 1, 1, 0, 2), 3.0],
+             [datetime(2012, 1, 1, 0, 3), 4.0],
+             [datetime(2012, 1, 1, 0, 4), 5.0]])
+
     def testLongDateRange(self):
+        # whitebox: datetime.seconds is INVALID, we need to make sure it uses
+        # datetime.total_seconds().
         self.assertInterpolated(
             [[datetime(2012, 1, 1, 0, 0), 0.0],
-             [datetime(2012, 2, 1, 0, 0), nan],
-             [datetime(2012, 3, 1, 0, 0), 1.0]],
+             [datetime(2012, 1, 3, 1, 0), nan],
+             [datetime(2012, 1, 5, 2, 0), 1.0]],
             [[datetime(2012, 1, 1, 0, 0), 0.0],
-             [datetime(2012, 2, 1, 0, 0), 0.5],
-             [datetime(2012, 3, 1, 0, 0), 1.0]])
+             [datetime(2012, 1, 3, 1, 0), 0.5],
+             [datetime(2012, 1, 5, 2, 0), 1.0]])
+
+    def testNumpyArray(self):
+        self.assertNumpyInterpolated(
+            array([[datetime(2012, 1, 1, 0, 0), 0.0],
+                   [datetime(2012, 1, 1, 1, 0), nan],
+                   [datetime(2012, 1, 1, 2, 0), 1.0]]),
+            array([[datetime(2012, 1, 1, 0, 0), 0.0],
+                   [datetime(2012, 1, 1, 1, 0), 0.5],
+                   [datetime(2012, 1, 1, 2, 0), 1.0]]))
+
 
 
 if __name__ == '__main__':
