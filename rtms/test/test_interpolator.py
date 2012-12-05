@@ -3,32 +3,89 @@
     Queen's University Applied Sustainability Centre
     
     This project is hosted on github; for up-to-date code and contacts:
-    https://github.com/Queens-Applied-Sustainability/PyRTM
+    https://github.com/Queens-Applied-Sustainability/RTMSuite
     
-    This file is part of PyRTM.
+    This file is part of RTMSuite.
 
-    PyRTM is free software: you can redistribute it and/or modify
+    RTMSuite is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    PyRTM is distributed in the hope that it will be useful,
+    RTMSuite is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with PyRTM.  If not, see <http://www.gnu.org/licenses/>.
+    along with RTMSuite.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
 from datetime import datetime
-#from .. import Interpolator
+from numpy import nan
+from .. import interpolator
+
 
 class TestOptimizer(unittest.TestCase):
 
-    def testX(self):
-        self.assertEqual(1, 1)
+    def assertInterpolated(self, data_in, expected):
+        out = interpolator.interpolate(data_in)
+        self.assertEqual(out, expected)
+
+    def testEmpty(self):
+        self.assertInterpolated([[]], [[]])
+
+    def testSingleDat(self):
+        self.assertInterpolated(
+            [[datetime(2012, 1, 1, 0, 0), 1.0]],
+            [[datetime(2012, 1, 1, 0, 0), 1.0]])
+
+    def testSingleNaN(self):
+        self.assertRaises(interpolator.interpolate(
+            [[datetime(2012, 1, 1, 0, 0), nan]]),
+            interpolator.NoValidDataError)
+
+    def testLeadingNaN(self):
+        self.assertInterpolated(
+            [[datetime(2012, 1, 1, 0, 0), nan],
+             [datetime(2012, 1, 1, 0, 1), 1.0]],
+            [[datetime(2012, 1, 1, 0, 0), 1.0],
+             [datetime(2012, 1, 1, 0, 1), 1.0]])
+
+    def testTrailingNaN(self):
+        self.assertInterpolated(
+            [[datetime(2012, 1, 1, 0, 0), 1.0],
+             [datetime(2012, 1, 1, 0, 1), nan]],
+            [[datetime(2012, 1, 1, 0, 0), 1.0],
+             [datetime(2012, 1, 1, 0, 1), 1.0]])
+
+    def testNaNSandwich(self):
+        self.assertInterpolated(
+            [[datetime(2012, 1, 1, 0, 0), nan],
+             [datetime(2012, 1, 1, 0, 1), 1.0],
+             [datetime(2012, 1, 1, 0, 2), nan]],
+            [[datetime(2012, 1, 1, 0, 0), 1.0],
+             [datetime(2012, 1, 1, 0, 1), 1.0],
+             [datetime(2012, 1, 1, 0, 2), 1.0]])
+
+    def testMidNaN(self):
+        self.assertInterpolated(
+            [[datetime(2012, 1, 1, 0, 0), 0.0],
+             [datetime(2012, 1, 1, 0, 1), nan],
+             [datetime(2012, 1, 1, 0, 2), 1.0]],
+            [[datetime(2012, 1, 1, 0, 0), 0.0],
+             [datetime(2012, 1, 1, 0, 1), 0.5],
+             [datetime(2012, 1, 1, 0, 2), 1.0]])
+
+    def testLongDateRange(self):
+        self.assertInterpolated(
+            [[datetime(2012, 1, 1, 0, 0), 0.0],
+             [datetime(2012, 2, 1, 0, 0), nan],
+             [datetime(2012, 3, 1, 0, 0), 1.0]],
+            [[datetime(2012, 1, 1, 0, 0), 0.0],
+             [datetime(2012, 2, 1, 0, 0), 0.5],
+             [datetime(2012, 3, 1, 0, 0), 1.0]])
 
 
 if __name__ == '__main__':
