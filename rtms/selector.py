@@ -51,6 +51,24 @@
 
 """
 
+from rtm.tools import solar
+
+SKIP_NIGHT = True
+NIGHT_CONST = 12 # W/m^2; less than this is night
+SOLAR_CONST = 1367 # W/m^2
+CHANGE_CONST = 6 # W/m^2 min
+Kt_MIN = 0.5
+
+
+class Selector(object):
+    """docstring for Selector"""
+    def __init__(self, latitude, longitude):
+        self.latitude = latitude
+        self.longitude = longitude
+        self.ext_irrad_calc = solar.incident_radiation
+    
+    def select(self, data):
+        return
 
 
 
