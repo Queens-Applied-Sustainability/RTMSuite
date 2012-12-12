@@ -36,16 +36,16 @@
 
     Then, feed it a time-series array of the format:
     [
-        {'time': datetime, 'irradiance': w/m2},
-        {'time': datetime, 'irradiance': w/m2},
+        [datetime, irradiance],
+        [datetime, irradiance],
         ...
     ]
 
     The program will return an array of the form:
 
     [
-        {'time': datetime, 'irradiance': w/m2, 'clear': bool},
-        {'time': datetime, 'irradiance': w/m2, 'clear': bool},
+        [datetime, irradiance, clear?],
+        [datetime, irradiance, clear?],
         ...
     ]
 
