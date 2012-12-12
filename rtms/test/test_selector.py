@@ -35,79 +35,79 @@ class TestSelector(unittest.TestCase):
     def assertDetected(self, irr_data, expected):
         select = selector.Selector(LATITUDE, LONGITUDE)
         out = select.select(irr_data)
-        self.assertEqual(irr_data, out)
+        self.assertEqual(out, expected)
 
     def testTwoClear(self):
         irr_data = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500],
-            [dt.parse('01/01/2012 11:05 -0700'), 502],
+            [dt.parse('01/01/2012 12:00 -0700'), 500],
+            [dt.parse('01/01/2012 12:01 -0700'), 501],
         ]
         expected = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500, True],
-            [dt.parse('01/01/2012 11:05 -0700'), 502, True],
+            [dt.parse('01/01/2012 12:00 -0700'), 500, True],
+            [dt.parse('01/01/2012 12:01 -0700'), 501, True],
         ]
         self.assertDetected(irr_data, expected)
 
     def testTwoCloudy(self):
         irr_data = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500],
-            [dt.parse('01/01/2012 11:05 -0700'), 550],
+            [dt.parse('01/01/2012 12:00 -0700'), 500],
+            [dt.parse('01/01/2012 12:01 -0700'), 510],
         ]
         expected = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500, False],
-            [dt.parse('01/01/2012 11:05 -0700'), 550, False],
+            [dt.parse('01/01/2012 12:00 -0700'), 500, False],
+            [dt.parse('01/01/2012 12:01 -0700'), 510, False],
         ]
         self.assertDetected(irr_data, expected)
 
     def testFirstClear(self):
         irr_data = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500],
-            [dt.parse('01/01/2012 11:05 -0700'), 501],
-            [dt.parse('01/01/2012 11:10 -0700'), 550],
+            [dt.parse('01/01/2012 12:00 -0700'), 640],
+            [dt.parse('01/01/2012 12:01 -0700'), 641],
+            [dt.parse('01/01/2012 12:02 -0700'), 649],
         ]
         expected = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500, True],
-            [dt.parse('01/01/2012 11:05 -0700'), 501, False],
-            [dt.parse('01/01/2012 11:10 -0700'), 550, False],
+            [dt.parse('01/01/2012 12:00 -0700'), 640, True],
+            [dt.parse('01/01/2012 12:01 -0700'), 641, False],
+            [dt.parse('01/01/2012 12:02 -0700'), 649, False],
         ]
         self.assertDetected(irr_data, expected)
 
     def testLastClear(self):
         irr_data = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500],
-            [dt.parse('01/01/2012 11:05 -0700'), 550],
-            [dt.parse('01/01/2012 11:10 -0700'), 551],
+            [dt.parse('01/01/2012 12:00 -0700'), 640],
+            [dt.parse('01/01/2012 12:01 -0700'), 649],
+            [dt.parse('01/01/2012 12:02 -0700'), 649],
         ]
         expected = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500, False],
-            [dt.parse('01/01/2012 11:05 -0700'), 550, False],
-            [dt.parse('01/01/2012 11:10 -0700'), 551, True],
+            [dt.parse('01/01/2012 12:00 -0700'), 640, False],
+            [dt.parse('01/01/2012 12:01 -0700'), 649, False],
+            [dt.parse('01/01/2012 12:02 -0700'), 649, True],
         ]
         self.assertDetected(irr_data, expected)
 
     def testSpike(self):
         irr_data = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500],
-            [dt.parse('01/01/2012 11:05 -0700'), 550],
-            [dt.parse('01/01/2012 11:10 -0700'), 501],
+            [dt.parse('01/01/2012 12:00 -0700'), 640],
+            [dt.parse('01/01/2012 12:01 -0700'), 649],
+            [dt.parse('01/01/2012 12:02 -0700'), 640],
         ]
         expected = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500, False],
-            [dt.parse('01/01/2012 11:05 -0700'), 550, False],
-            [dt.parse('01/01/2012 11:10 -0700'), 501, False],
+            [dt.parse('01/01/2012 12:00 -0700'), 640, False],
+            [dt.parse('01/01/2012 12:01 -0700'), 649, False],
+            [dt.parse('01/01/2012 12:02 -0700'), 640, False],
         ]
         self.assertDetected(irr_data, expected)
 
     def testThreeClear(self):
         irr_data = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500],
-            [dt.parse('01/01/2012 11:05 -0700'), 501],
-            [dt.parse('01/01/2012 11:10 -0700'), 502],
+            [dt.parse('01/01/2012 12:00 -0700'), 640],
+            [dt.parse('01/01/2012 12:01 -0700'), 641],
+            [dt.parse('01/01/2012 12:02 -0700'), 640],
         ]
         expected = [
-            [dt.parse('01/01/2012 11:00 -0700'), 500, True],
-            [dt.parse('01/01/2012 11:05 -0700'), 501, True],
-            [dt.parse('01/01/2012 11:10 -0700'), 502, True],
+            [dt.parse('01/01/2012 12:00 -0700'), 640, True],
+            [dt.parse('01/01/2012 12:01 -0700'), 641, True],
+            [dt.parse('01/01/2012 12:02 -0700'), 640, True],
         ]
         self.assertDetected(irr_data, expected)
 
