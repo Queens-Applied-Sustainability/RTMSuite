@@ -37,6 +37,20 @@ class TestSelector(unittest.TestCase):
         out = select.select(irr_data)
         self.assertEqual(out, expected)
 
+    def testEmpty(self):
+        irr_data = []
+        with self.assertRaises(selector.InsufficientDataError):
+            select = selector.Selector(LATITUDE, LONGITUDE)
+            select.select(irr_data)
+
+    def testOne(self):
+        irr_data = [
+            [dt.parse('01/01/2012 12:00 -0700'), 500],
+        ]
+        with self.assertRaises(selector.InsufficientDataError):
+            select = selector.Selector(LATITUDE, LONGITUDE)
+            select.select(irr_data)
+
     def testTwoClear(self):
         irr_data = [
             [dt.parse('01/01/2012 12:00 -0700'), 500],
@@ -111,7 +125,29 @@ class TestSelector(unittest.TestCase):
         ]
         self.assertDetected(irr_data, expected)
 
-    # test night, etc
+    def testDark(self):
+        irr_data = [
+            [dt.parse('01/01/2012 00:00 -0700'), 0],
+            [dt.parse('01/01/2012 00:01 -0700'), 0],
+        ]
+        expected = [
+            [dt.parse('01/01/2012 00:00 -0700'), 0, None],
+            [dt.parse('01/01/2012 00:01 -0700'), 0, None],
+        ]
+        self.assertDetected(irr_data, expected)
+
+    def testSkipDark(self):
+        irr_data = [
+            [dt.parse('01/01/2012 12:00 -0700'), 640],
+            [dt.parse('01/02/2012 00:00 -0700'), 0],
+            [dt.parse('01/02/2012 12:01 -0700'), 640],
+        ]
+        expected = [
+            [dt.parse('01/01/2012 12:00 -0700'), 640, True],
+            [dt.parse('01/02/2012 00:00 -0700'), 0, None],
+            [dt.parse('01/02/2012 12:01 -0700'), 640, True],
+        ]
+        self.assertDetected(irr_data, expected)
 
 
 if __name__ == '__main__':

@@ -64,6 +64,9 @@ CHANGE_CONST = 6 # W/m^2 min
 Kt_MIN = 0.5
 
 
+class InsufficientDataError(ValueError): pass
+
+
 class Selector(object):
     """docstring for Selector"""
     def __init__(self, latitude, longitude):
@@ -72,6 +75,8 @@ class Selector(object):
         self.ext_irrad_calc = solar.extraterrestrial_radiation
     
     def select(self, irr_data):
+        if len(irr_data) <= 1:
+            raise InsufficientDataError("At least two data points are needed.")
         data = deepcopy(irr_data)
 
         prev_row, this_row, next_row = None, None, None
@@ -81,6 +86,11 @@ class Selector(object):
         prev_dextra, next_dextra = None, None
 
         for next_row in chain(data, [None]):
+
+            # skip if it's nighttime
+            if next_row and next_row[1] < NIGHT_CONST:
+                next_row.append(None)
+                continue
 
             if next_row:
                 next_G = self.ext_irrad_calc(next_row[0],
