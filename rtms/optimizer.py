@@ -105,7 +105,7 @@ def _optimize(things_list):
     model.update(settings)
     try:
         answer = optimizer.optimize(model, target_irradiance=target)
-    except (ValueError) as err:
+    except (BadBoundsError, RTMError) as err:
         logging.error(err)
         return nan
     return answer

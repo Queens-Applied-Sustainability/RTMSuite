@@ -22,6 +22,7 @@
 """
 
 import unittest
+from numpy import nan
 from dateutil import parser as dtp
 from rtm import SMARTS, RTMError
 from .. import optimizer
@@ -46,6 +47,8 @@ class TestOptimizer(unittest.TestCase):
         self.assertEqual(len(expected), len(result))
         decimal_places = 1
         for exp, res in zip(expected, result):
+            if exp is nan and res is nan:
+                continue # nan == nan ...
             self.assertAlmostEqual(exp, res, decimal_places)
 
     def testFMMInstalled(self):
@@ -72,10 +75,29 @@ class TestOptimizer(unittest.TestCase):
         self.assertOptimizedEqual(expected, result)
 
     def testSBdartMultiprocessing(self):
+        "this test takes a long time!"
         from multiprocessing import Pool
         from rtm import SBdart
-        expected = [0.25, 0.24]
-        result = optimizer.optimize(sample, base, SBdart, aod, Pool(1).map)
+        expected = [0.25]
+        result = optimizer.optimize([sample[0]], base, SBdart, aod, Pool(2).map)
+        self.assertOptimizedEqual(expected, result)
+
+    def testBadBounds(self):
+        from rtm import SMARTS
+        expected = [nan]
+        this_sample = [{
+            'settings': {'time': dtp.parse('2012-01-01 12:00 -0700')},
+            'target': 0 }]
+        result = optimizer.optimize(this_sample, base, SMARTS, aod)
+        self.assertOptimizedEqual(expected, result)
+
+    def testSmartsSunDown(self):
+        from rtm import SMARTS
+        expected = [nan]
+        this_sample = [{
+            'settings': {'time': dtp.parse('2012-01-01 00:00 -0700')},
+            'target': 0 }]
+        result = optimizer.optimize(this_sample, base, SMARTS, aod)
         self.assertOptimizedEqual(expected, result)
 
     @classmethod
