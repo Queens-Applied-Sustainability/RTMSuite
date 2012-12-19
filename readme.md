@@ -17,3 +17,11 @@ depth and cloud optical thickness. No worries, we gotcho back.
 code has been written...]
 
 
+
+Testing
+-------
+
+Use nose, and for a quick check run `nosetests -a '!slow'`.
+
+`nosetests` alone will run all tests including ones using `sbdart`, which
+takes ages.
