@@ -22,6 +22,8 @@
 """
 
 import unittest
+from nose.plugins.attrib import attr
+
 from numpy import nan
 from dateutil import parser as dtp
 from rtm import SMARTS, RTMError
@@ -74,6 +76,7 @@ class TestOptimizer(unittest.TestCase):
         result = optimizer.optimize(sample, base, SMARTS, aod, Pool(2).map)
         self.assertOptimizedEqual(expected, result)
 
+    @attr('slow')
     def testSBdartMultiprocessing(self):
         "this test takes a long time!"
         from multiprocessing import Pool
