@@ -1,0 +1,6 @@
+
+run:
+    save_everything: True
+    multiprocessing: False
+    processes: 'auto' # effective when multiprocessing is True; number or 'auto'
+    verbosity: 'warnings' # 'everything', 'warnings', 'quiet'
