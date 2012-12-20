@@ -1,0 +1,11 @@
+# Map time-series data header names to the appropriate rtm setting
+# Mappings go like this:
+# rtm_property: csv_header
+
+# Required mapping
+irradiance: 'global_horizontal'
+
+# Other mapping
+pressure: 'surface_pressure'
+temperature: 'dry_dec_temp'
+relative_humidity: 'humidity'
