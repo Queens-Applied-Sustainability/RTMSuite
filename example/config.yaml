@@ -1,0 +1,27 @@
+# rtm_property: value
+
+
+info:
+    # Required settings
+    latitude: 39.74
+    longitude: -105.18
+
+    # Recommended settings
+    description: 'An Example' # keep it short!
+    surface_type: 'vegetation'
+    elevation: 1.829
+    atmosphere: 'sub-arctic summer'
+
+    # More settings...
+    solar_constant: 1366
+    average_daily_temperature: 18
+
+
+csv_map:
+    # Required mapping
+    irradiance: 'global_horizontal'
+
+    # Other mapping
+    pressure: 'surface_pressure'
+    temperature: 'dry_dec_temp'
+    relative_humidity: 'humidity'
