@@ -1,0 +1,4 @@
+year,month,day,time,surface_pressure,dry_deck_temp,humidity,global_CM22
+2012,1,1,11:30:00,0.9,16.8,10,636
+2012,1,1,12:00:00,0.9,16.9,10,639
+2012,1,1,12:30:00,0.9,17,11,637
