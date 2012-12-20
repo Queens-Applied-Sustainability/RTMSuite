@@ -60,9 +60,8 @@
 
 """
 
-import logging
 import yaml
-from numpy import genfromtxt, nan, datetime64
+from numpy import genfromtxt, nan
 from numpy.lib._iotools import ConverterError
 from dateutil import parser as dtparser
 from rtm import settings as rtmsettings
