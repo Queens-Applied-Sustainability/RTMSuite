@@ -1,20 +1,28 @@
 RTMSuite
 ========
 
+Time-series atmospheric data in -> optimized AOD and cloud thickness and spectrum out.
+
+
+Setting Up
+----------
+
+
 You'll want to have RTM set up to make use of any of this
 https://github.com/Queens-Applied-Sustainability/PyRTM
 
+Create a directory some where.
 
-Raison d'Etre
--------------
+You'll need to reate an `info.yaml` file there containing global settings. At a bare minimum it should look like this:
 
-You have some met station time-series data, but they didn't have a spectrometer
-and that's the data you really need. Oh and you're also missing aerosol optical
-depth and cloud optical thickness. No worries, we gotcho back.
+```yaml
+latitude: 39.74
+longitude: -105.18
+```
 
+Valid settings are any of those found in rtm.settings (https://github.com/Queens-Applied-Sustainability/PyRTM/blob/master/rtm/settings.py).
 
-[expect more elaborate and remotely useful content sometime... like after some
-code has been written...]
+Settings in `info.yaml` will be applied globally to the rtm models. Global settings take a low precedence and will be overridden by anything also defined in the time-series CSV.
 
 
 
