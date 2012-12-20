@@ -44,6 +44,9 @@
 
     info:
 
+    THIS DOC SECTION IS OUT OF DATE.
+    check the example folder and actual code.
+
     parses and validates an info file
 
     such a file must, at minimum, define latitude and longitude.
@@ -60,11 +63,13 @@
 
 """
 
+import logging
+from copy import deepcopy
 import yaml
 from numpy import genfromtxt, nan
 from numpy.lib._iotools import ConverterError
 from dateutil import parser as dtparser
-from rtm import settings as rtmsettings
+import defaults
 
 
 class DateTimeParseError(ConverterError): pass
@@ -73,7 +78,91 @@ class DateTimeParseError(ConverterError): pass
 class HeaderError(KeyError): pass
 
 
-VALID_PROPERTIES = set(rtmsettings.defaults.keys() + ['irradiance'])
+VALID_PROPERTIES = set(defaults.rtm_settings.keys() + ['irradiance'])
+
+
+def config(config_file):
+    # returns info, map, run
+
+    required = set(['info', 'csv_map'])
+    required_info = set(['latitude', 'longitude'])
+    required_map = set(['time', 'irradiance'])
+    additional = set(['meta'])
+    valid_run = set(['save_everything', 'multiprocessing',
+                        'processes', 'verbosity'])
+
+    parsed = yaml.load(config_file)
+
+    # make sure we got a dict
+    if not isinstance(parsed, dict):
+        raise TypeError("Settings did not parse to a dictionary: %s" % parsed)
+
+    # make sure we got the right dicts
+    if not all(section in parsed for section in required):
+        missing = set(key for key in required if key not in parsed)
+        raise KeyError("Missing config sections: " + ", ".join(missing))
+
+    # check if additional sectons are present
+    extras = set(section for section in additional if section in parsed)
+
+    # check if any other sections are there for some reason
+    if any(section not in required+additional for section in parsed):
+        misplaced = set(section for section in parsed if
+            section not in reqired+additional)
+        logging.warning('Found extraneous sections in the config: ' + \
+            ', '.join(misplaced))
+
+    # make sure our dicts contain dicts
+    for subdict in required+extras:
+        if not isinstance(subdict, dict):
+            raise TypeError("config sections didn't import as dicts...")
+
+    # check we have the necessary info
+    info_dict = parsed['info']
+    if any(prop not in info_dict for prop in required_info):
+        missing = set(prop for prop in required_info if prop not in info_dict)
+        raise ValueError('Missing info properties: ' + ', '.join(missing))
+
+    # check we have the necessary mappings
+    map_dict = parsed['csv_map']
+    if any(prop not in map_dict for prop in map_dict):
+        missing = set(prop for prop in required_map if prop not in map_dict)
+        raise ValueError('Missing ')
+
+    # check that all the mappings and info are legit
+    rtm_keys = set(info_dict.keys() + map_dict.keys())
+    if any(key not in VALID_PROPERTIES for key in rtm_keys):
+        invalids = set(key for key in rtm_keys if key not in VALID_PROPERTIES)
+
+        # pull out the invalids
+        info_invalids = [info_dict.pop(p) for p in invalids if p in info_dict]
+        if info_invalids:
+            logging.warning('ignoring invalid info properties: ' + \
+                            ', '.join(info_invalids))
+        map_invalids = [map_dict.pop(p) for p in invalids if p in map_dict]
+        if map_invalids:
+            logging.warning('ignoring invalid mappings: ' + \
+                            ', '.join(map_invalids))
+
+    # warn if info settings will be overridden by the mapping
+    if any(info_key in map_dict for info_key in info_dict):
+        overridden = set(key for key in info_dict if key in map_dict)
+        logging.warning('info settings {} will be overridden by the mapped '\
+            'csv values for that setting'.format(', '.join(overridden)))
+
+    # deal with no run settings
+    run_dict = defaults.run
+    try:
+        run_dict.update(parsed['run'])
+    except KeyError:
+        logging.info('no run settings found in config, using defaults')
+    # check that all run settings are legit
+    if any(key not in defaults.run for key in run_dict):
+        invalids = set(key for key in run_dict if key not in defaults.run)
+        logging.warning('ignoring invalid run settings: ' + \
+                        ', '.join(invalids))
+
+    return info_dict, map_dict, run_dict
 
 
 def data(data_file):
@@ -103,27 +192,5 @@ def data(data_file):
     if any(k not in VALID_PROPERTIES for k in headers):
         bad_ones = (k for k in headers if k not in VALID_PROPERTIES)
         raise HeaderError("Invalid header names: " + ", ".join(bad_ones))
-
-    return parsed
-
-
-def info(info_file):
-
-    parsed = yaml.load(info_file)
-
-    # make sure we got a dict out
-    if not isinstance(parsed, dict):
-        raise TypeError("Settings did not parse to a dictionary: %s" % parsed)
-
-    # make sure latitude and longitude are there
-    basic_properties = set(['latitude', 'longitude'])
-    if any(prop not in parsed for prop in basic_properties):
-        missing = (prop for prop in basic_properties if prop not in parsed)
-        raise KeyError("Missing properties: " + ", ".join(missing))
-
-    # verify keys
-    if any(k not in VALID_PROPERTIES for k in parsed):
-        bad_ones = (k for k in parsed if k not in VALID_PROPERTIES)
-        raise KeyError("Invalid properties: " + ", ".join(bad_ones))
 
     return parsed
