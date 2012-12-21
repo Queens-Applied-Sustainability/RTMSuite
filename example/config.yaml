@@ -4,10 +4,10 @@ info:
     latitude: 39.74
     longitude: -105.18
     # Recommended settings
-    description: 'An Example' # keep it short!
-    surface_type: 'vegetation'
+    description: An Example # keep it short!
+    surface_type: vegetation
     elevation: 1.829
-    atmosphere: 'sub-arctic summer'
+    atmosphere: sub-arctic summer
     # More settings...
     solar_constant: 1366
     average_daily_temperature: 18
@@ -15,12 +15,12 @@ info:
 
 csv_map:
     # Required mapping
-    time: 'datetime'
-    irradiance: 'global_CM22'
+    time: datetime
+    irradiance: global_CM22
     # Other mapping
-    pressure: 'surface_pressure'
-    temperature: 'dry_deck_temp'
-    relative_humidity: 'humidity'
+    pressure: surface_pressure
+    temperature: dry_deck_temp
+    relative_humidity: humidity
 
 
 # The run section is optional. Below are all the options.
@@ -28,4 +28,4 @@ run:
     save_everything: True
     multiprocessing: True
     processes: 2 # effective when multiprocessing is True; number or 'auto'
-    verbosity: 'warnings' # 'everything', 'warnings', 'quiet'
+    verbosity: warnings # 'everything', 'warnings', 'quiet'

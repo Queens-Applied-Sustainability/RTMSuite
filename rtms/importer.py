@@ -92,11 +92,12 @@ def config(config_file):
                         'processes', 'verbosity'])
 
     parsed = yaml.load(config_file)
-    sections = set(parsed.keys())
 
     # make sure we got a dict
     if not isinstance(parsed, dict):
         raise TypeError("Settings did not parse to a dictionary: %s" % parsed)
+
+    sections = set(parsed.keys())
 
     # make sure we got the right dicts
     if not sections >= required:
@@ -145,7 +146,7 @@ def config(config_file):
             'csv values for that setting'.format(', '.join(info_set & map_set)))
 
     # deal with no run settings
-    run_dict = defaults.run
+    run_dict = deepcopy(defaults.run)
     try:
         run_dict.update(parsed['run'])
     except KeyError:
