@@ -15,6 +15,7 @@ info:
 
 csv_map:
     # Required mapping
+    time: 'datetime'
     irradiance: 'global_CM22'
     # Other mapping
     pressure: 'surface_pressure'

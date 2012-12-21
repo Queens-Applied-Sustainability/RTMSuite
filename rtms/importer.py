@@ -82,73 +82,67 @@ VALID_PROPERTIES = set(defaults.rtm_settings.keys() + ['irradiance'])
 
 
 def config(config_file):
-    # returns info, map, run
+    """returns info, map, run"""
 
     required = set(['info', 'csv_map'])
     required_info = set(['latitude', 'longitude'])
     required_map = set(['time', 'irradiance'])
-    additional = set(['meta'])
+    additional = set(['run'])
     valid_run = set(['save_everything', 'multiprocessing',
                         'processes', 'verbosity'])
 
     parsed = yaml.load(config_file)
+    sections = set(parsed.keys())
 
     # make sure we got a dict
     if not isinstance(parsed, dict):
         raise TypeError("Settings did not parse to a dictionary: %s" % parsed)
 
     # make sure we got the right dicts
-    if not all(section in parsed for section in required):
-        missing = set(key for key in required if key not in parsed)
-        raise KeyError("Missing config sections: " + ", ".join(missing))
+    if not sections >= required:
+        raise KeyError("Missing config sections: " +
+            ", ".join(required - sections))
 
-    # check if additional sectons are present
-    extras = set(section for section in additional if section in parsed)
-
-    # check if any other sections are there for some reason
-    if any(section not in required+additional for section in parsed):
-        misplaced = set(section for section in parsed if
-            section not in reqired+additional)
-        logging.warning('Found extraneous sections in the config: ' + \
-            ', '.join(misplaced))
+    # check if optional sectons are present
+    optionals = additional & sections
 
     # make sure our dicts contain dicts
-    for subdict in required+extras:
-        if not isinstance(subdict, dict):
-            raise TypeError("config sections didn't import as dicts...")
+    for subdict in (required | optionals):
+        if not isinstance(parsed[subdict], dict):
+            raise TypeError("config section didn't import as dict: %s" %
+                subdict)
+
+    # check if any other sections are there for some reason
+    if not sections <= (required | additional):
+        logging.warning('Ignoring extraneous sections in the config: ' +
+            ', '.join(sections - (required | additional)))
 
     # check we have the necessary info
-    info_dict = parsed['info']
-    if any(prop not in info_dict for prop in required_info):
-        missing = set(prop for prop in required_info if prop not in info_dict)
-        raise ValueError('Missing info properties: ' + ', '.join(missing))
+    info_set = set(parsed['info'])
+    if not required_info <= info_set:
+        raise ValueError('Missing info properties: ' +
+            ', '.join(required_info - info_set))
+    # make it all legit
+    if not info_set <= VALID_PROPERTIES:
+        logging.warning('ignoring invalid properties: ' +
+            ', '.join(info_set - VALID_PROPERTIES))
+        info_set &= VALID_PROPERTIES
 
     # check we have the necessary mappings
-    map_dict = parsed['csv_map']
-    if any(prop not in map_dict for prop in map_dict):
-        missing = set(prop for prop in required_map if prop not in map_dict)
-        raise ValueError('Missing ')
+    map_set = set(parsed['csv_map'])
+    if not required_map <= map_set:
+        raise ValueError('Missing csv map properties: ' + 
+            ', '.join(required_map - map_set))
+    # make it all legit
+    if not map_set <= VALID_PROPERTIES:
+        logging.warning('ignoring invalid mappings: ' +
+            ', '.join(map_set - VALID_PROPERTIES))
+        map_set &= VALID_PROPERTIES
 
-    # check that all the mappings and info are legit
-    rtm_keys = set(info_dict.keys() + map_dict.keys())
-    if any(key not in VALID_PROPERTIES for key in rtm_keys):
-        invalids = set(key for key in rtm_keys if key not in VALID_PROPERTIES)
 
-        # pull out the invalids
-        info_invalids = [info_dict.pop(p) for p in invalids if p in info_dict]
-        if info_invalids:
-            logging.warning('ignoring invalid info properties: ' + \
-                            ', '.join(info_invalids))
-        map_invalids = [map_dict.pop(p) for p in invalids if p in map_dict]
-        if map_invalids:
-            logging.warning('ignoring invalid mappings: ' + \
-                            ', '.join(map_invalids))
-
-    # warn if info settings will be overridden by the mapping
-    if any(info_key in map_dict for info_key in info_dict):
-        overridden = set(key for key in info_dict if key in map_dict)
-        logging.warning('info settings {} will be overridden by the mapped '\
-            'csv values for that setting'.format(', '.join(overridden)))
+    if not info_set.isdisjoint(map_set):
+        logging.warning('info settings {} will be overridden by the mapped '
+            'csv values for that setting'.format(', '.join(info_set & map_set)))
 
     # deal with no run settings
     run_dict = defaults.run
@@ -156,12 +150,14 @@ def config(config_file):
         run_dict.update(parsed['run'])
     except KeyError:
         logging.info('no run settings found in config, using defaults')
-    # check that all run settings are legit
-    if any(key not in defaults.run for key in run_dict):
-        invalids = set(key for key in run_dict if key not in defaults.run)
-        logging.warning('ignoring invalid run settings: ' + \
-                        ', '.join(invalids))
 
+    # check that all run settings are legit
+    if not set(run_dict) <= set(defaults.run):
+        logging.warning('ignoring invalid run settings: ' +
+            ', '.join(set(defaults.run) - set(run_dict)))
+
+    info_dict = {k:v for k, v in parsed['info'].items() if k in info_set}
+    map_dict = {k:v for k, v in parsed['csv_map'].items() if k in map_set}
     return info_dict, map_dict, run_dict
 
 
