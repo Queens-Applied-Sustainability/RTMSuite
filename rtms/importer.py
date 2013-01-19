@@ -177,17 +177,17 @@ def data(data_file):
         raise ValueError("Encountered an IndexError -- empty file?")
 
 
-    headers = parsed.dtype.fields.keys()
+    headers = set(parsed.dtype.fields.keys())
 
     # verify that at least time and irradiance are present
     basic_properties = set(['time', 'irradiance'])
-    if any(prop not in headers for prop in basic_properties):
-        missing = (prop for prop in basic_properties if prop not in headers)
-        raise KeyError("Missing names: " + ", ".join(missing))
+    if not headers >= basic_properties:
+        raise KeyError("Missing names: " +
+            ", ".join(basic_properties - headers))
 
     # verify that all the columns are legit
-    if any(k not in VALID_PROPERTIES for k in headers):
-        bad_ones = (k for k in headers if k not in VALID_PROPERTIES)
-        raise HeaderError("Invalid header names: " + ", ".join(bad_ones))
+    if not headers <= VALID_PROPERTIES:
+        raise HeaderError("Invalid header names: " +
+            ", ".join(headers - VALID_PROPERTIES))
 
     return parsed

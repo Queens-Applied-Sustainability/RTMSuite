@@ -1,0 +1,24 @@
+
+info:
+    description: NREL BMS # keep it short!
+    latitude: 39.74
+    longitude: -105.18
+    elevation: 1.829
+    surface_type: vegetation
+    atmosphere: sub-arctic summer
+
+
+csv_map:
+    time: DateTime
+    irradiance: GlobalCM22
+    temperature: Temperature
+    relative_humidity: RelativeHumidity
+    pressure: Pressure
+    precipitable_water: PrecipitableWater
+
+
+run:
+    save_everything: True
+    multiprocessing: True
+    processes: 2 # effective when multiprocessing is True; number or 'auto'
+    verbosity: warnings # 'everything', 'warnings', 'quiet'

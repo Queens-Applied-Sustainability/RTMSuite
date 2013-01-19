@@ -23,8 +23,8 @@ csv_map:
     relative_humidity: humidity
 
 
-# The run section is optional. Below are all the options.
 run:
+    # Optional section. Below are the defaults.
     save_everything: True
     multiprocessing: True
     processes: 2 # effective when multiprocessing is True; number or 'auto'
