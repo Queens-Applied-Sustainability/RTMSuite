@@ -212,8 +212,8 @@ def data(data_file, column_map=None):
     # verify that at least time and irradiance are present
     basic_properties = set(['time', 'irradiance'])
     if not col_names >= basic_properties:
-        raise KeyError("Missing names: " +
-            ", ".join(basic_properties - col_names))
+        raise KeyError("Missing column names: {}. have: {}.".format(
+            ", ".join(basic_properties - col_names), trimmed.dtype.names))
 
     # verify that all the columns are legit
     if not col_names <= VALID_PROPERTIES:

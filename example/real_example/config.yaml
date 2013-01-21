@@ -15,7 +15,7 @@ csv_map:
     temperature: Temperature
     relative_humidity: RelativeHumidity
     pressure: Pressure
-    precipitable_water: PrecipitableWater
+    #precipitable_water: PrecipitableWater
 
 
 run:

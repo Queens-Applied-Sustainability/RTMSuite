@@ -53,7 +53,7 @@
 
 from copy import deepcopy
 from itertools import chain
-from numpy import nan
+from numpy import nan, rec, empty
 from rtm.tools import solar
 
 SKIP_NIGHT = True
@@ -67,6 +67,14 @@ Kt_MIN = 0.5
 class InsufficientDataError(ValueError): pass
 
 
+def append_field(to, dtype):
+    new_dtype = to.dtype.descr + [dtype]
+    new_rec = empty(len(to), dtype=new_dtype)
+    for name in to.dtype.names:
+        new_rec[name] = to[name]
+    return new_rec
+
+
 class Selector(object):
     """docstring for Selector"""
     def __init__(self, latitude, longitude):
@@ -77,7 +85,9 @@ class Selector(object):
     def select(self, irr_data):
         if len(irr_data) <= 1:
             raise InsufficientDataError("At least two data points are needed.")
-        data = deepcopy(irr_data)
+        # add a column for clear/cloudy
+        # TODO: handle lists
+        data = append_field(irr_data, ('clear', bool))
 
         prev_row, this_row, next_row = None, None, None
         prev_G, this_G, next_G = None, None, None
@@ -89,7 +99,7 @@ class Selector(object):
 
             # skip if it's nighttime
             if next_row and next_row[1] < NIGHT_CONST:
-                next_row.append(None)
+                next_row['clear'] = None
                 continue
 
             if next_row:
@@ -108,7 +118,7 @@ class Selector(object):
                 if next_row:
                     change = max(change, abs(next_dextra - next_dirrad))
 
-                this_row.append(change < CHANGE_CONST)
+                this_row['clear'] = (change < CHANGE_CONST)
 
             # shuffle down
             prev_row, this_row = this_row, next_row
@@ -117,7 +127,4 @@ class Selector(object):
             prev_dirrad = next_dirrad
             prev_dextra = next_dextra
 
-
         return data
-
-
