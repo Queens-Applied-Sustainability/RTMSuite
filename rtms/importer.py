@@ -61,6 +61,13 @@
 
     This tool requires pyyaml.
 
+
+
+    data:
+
+    if no mapping is provided: try to use all columns by column name
+    if mapping is provided: try to use ONLY mapped column by mapped name
+
 """
 
 import logging
@@ -162,11 +169,12 @@ def config(config_file):
     return info_dict, map_dict, run_dict
 
 
-def data(data_file):
+def data(data_file, column_map=None):
+    csv_time = column_map['time'] if column_map else 'time'
     gen_kwargs = {
         'delimiter': ',',
         'names': True,
-        'converters': {'time': lambda s: dtparser.parse(s)},
+        'converters': {csv_time: lambda s: dtparser.parse(s)},
         'dtype': None,
     }
     try:
@@ -176,18 +184,40 @@ def data(data_file):
     except IndexError:
         raise ValueError("Encountered an IndexError -- empty file?")
 
+    if column_map:
+        # convert the column names to their mapped RTM names
+        csv_names = set(parsed.dtype.names)
+        map_csv_names = set(column_map.values())
+        if not map_csv_names <= csv_names:
+            raise KeyError("Missing CSV columns: " +
+                ", ".join(map_csv_names - csv_names))
 
-    headers = set(parsed.dtype.fields.keys())
+        swapped_names = []
+        for csv_name in parsed.dtype.names:
+            if csv_name not in map_csv_names:
+                name = csv_name
+            else:
+                name = [k for k, v in column_map.items() if v == csv_name][0]
+            swapped_names.append(name)
+        parsed.dtype.names = swapped_names
+
+        # just get the ones we want
+        trimmed = parsed[column_map.keys()]
+
+    else:
+        trimmed = parsed
+
+    col_names = set(trimmed.dtype.names)
 
     # verify that at least time and irradiance are present
     basic_properties = set(['time', 'irradiance'])
-    if not headers >= basic_properties:
+    if not col_names >= basic_properties:
         raise KeyError("Missing names: " +
-            ", ".join(basic_properties - headers))
+            ", ".join(basic_properties - col_names))
 
     # verify that all the columns are legit
-    if not headers <= VALID_PROPERTIES:
+    if not col_names <= VALID_PROPERTIES:
         raise HeaderError("Invalid header names: " +
-            ", ".join(headers - VALID_PROPERTIES))
+            ", ".join(col_names - VALID_PROPERTIES))
 
-    return parsed
+    return trimmed

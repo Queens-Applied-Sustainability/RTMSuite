@@ -9,6 +9,7 @@ info:
 
 
 csv_map:
+    #rtm_name: CSV column name
     time: DateTime
     irradiance: GlobalCM22
     temperature: Temperature

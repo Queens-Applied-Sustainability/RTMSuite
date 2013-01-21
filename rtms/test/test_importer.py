@@ -113,7 +113,6 @@ class TestConfigInfo(unittest.TestCase):
         conf = deepcopy(self.basic)
         conf['run'].update({'invalid': 'blah'})
         y_in = yaml.dump(conf)
-        print y_in
         with self.assertRaises(MockLogger.Warning):
             importer.config(y_in)
 
@@ -187,6 +186,53 @@ class TestDataImporter(unittest.TestCase):
         f = StringIO("")
         with self.assertRaises(ValueError):
             assert_warns(UserWarning, importer.data, f)
+
+    ### WITH column_map ###
+
+    def testValidCSVMapped(self):
+        f = StringIO("Time,irrad\n'2012-01-01 12:00:00-07:00',460")
+        imported = importer.data(f, {
+            'time': 'Time',
+            'irradiance': 'irrad',
+        })
+
+    def testInvalidDTMapped(self):
+        with self.assertRaises(importer.DateTimeParseError):
+            f = StringIO("Time,irrad\n'2012-01-50 12:00:00-07:00',460")
+            imported = importer.data(f, {
+                'time': 'Time',
+                'irradiance': 'irrad',
+            })
+
+    def testInvalidHeaderMapped(self):
+        with self.assertRaises(importer.HeaderError):
+            f = StringIO("time,blah,irradiance\n'2012-01-01 12:00:00-07:00',0,460")
+            imported = importer.data(f, {
+                'time': 'time',
+                'invalid': 'blah',
+                'irradiance': 'irradiance',
+            })
+
+    def testInvalidHeaderMappedOut(self):
+        f = StringIO("time,blah,irradiance\n'2012-01-01 12:00:00-07:00',0,460")
+        imported = importer.data(f, {
+            'time': 'time',
+            'irradiance': 'irradiance',
+        })
+
+    def testNoDataMapped(self):
+        with self.assertRaises(KeyError):
+            f = StringIO("time,irradiance")
+            imported = importer.data(f, {
+                'time': 'Time',
+                'irradiance': 'irradiance',
+            })
+
+    def testEmptyMapped(self):
+        f = StringIO("")
+        with self.assertRaises(ValueError):
+            assert_warns(UserWarning, importer.data, f, {})
+
 
 
 if __name__ == '__main__':
