@@ -1,4 +1,5 @@
 from collections import Counter
+from numpy import nan
 from rtm import SMARTS
 import rtms
 
@@ -42,8 +43,13 @@ print "done."
 
 print "Submitting to optimizer for SMARTS..."
 aods = rtms.optimize(optimizeable, site_info, SMARTS, 'angstroms_coefficient')
+print "optimzed {} points ({:.1%}) of {} selected clear points.".format(
+    *((lambda l:((lambda s,t:[s,float(s)/t,t])(l - Counter(aods)[nan],l))
+       )(len(aods))))
 
-# optimizer = rtms.Optimizer(parameter="aerosol_optical_depth",
-#     bounds=(0,1), tolerance=0.01)
-# optimizer.optimze
 
+print "Interpolating AOD between successful optimizations...",
+optimes = [o['settings']['time'] for o in optimizeable]
+time_aod = [[t, aod] for t, aod in zip(optimes, aods)]
+interp_aods = rtms.interpolate(time_aod)
+print "done."

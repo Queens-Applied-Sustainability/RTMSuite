@@ -75,11 +75,9 @@ def interpolate(input_data):
         index -= 1
         # have we entered a gap?
         if out[index][1] is nan:
-            print "found a gap!"
             last_val_index = index + 1
             # find the next edge
             while out[index][1] is nan:
-                print "scanning gap...."
                 index -= 1
             # what's the slope through the gap?
             delta_t = out[index][0] - out[last_val_index][0]
