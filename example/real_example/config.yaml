@@ -19,7 +19,7 @@ csv_map:
 
 
 run:
-    save_everything: True
-    multiprocessing: True
+    save_everything: True # not yet implemented
+    multiprocessing: True # not yet implemented
     processes: 2 # effective when multiprocessing is True; number or 'auto'
-    verbosity: warnings # 'everything', 'warnings', 'quiet'
+    verbosity: warnings # 'everything', 'warnings', 'quiet'... not yet implemented
