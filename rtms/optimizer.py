@@ -106,7 +106,7 @@ def _optimize(things_list):
     try:
         answer = optimizer.optimize(model, target_irradiance=target)
     except (BadBoundsError, RTMError) as err:
-        logging.error(err)
+        logging.error('{}: {}'.format(settings['time'], err))
         return nan
     return answer
 
