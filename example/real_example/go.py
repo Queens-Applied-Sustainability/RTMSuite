@@ -2,6 +2,7 @@ from collections import Counter
 from numpy import nan
 from rtm import SMARTS
 import rtms
+import pdb
 
 CONFIG_FILE = open('config.yaml')
 DATA_FILE = open('time-series.csv')
@@ -53,3 +54,4 @@ optimes = [o['settings']['time'] for o in optimizeable]
 time_aod = [[t, aod] for t, aod in zip(optimes, aods)]
 interp_aods = rtms.interpolate(time_aod)
 print "done."
+pdb.set_trace()
