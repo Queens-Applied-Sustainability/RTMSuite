@@ -55,6 +55,7 @@ from copy import deepcopy
 from itertools import chain
 from numpy import nan, rec, empty
 from rtm.tools import solar
+import pdb
 
 SKIP_NIGHT = True
 NIGHT_CONST = 12 # W/m^2; less than this is night
@@ -83,18 +84,22 @@ class Selector(object):
         self.ext_irrad_calc = solar.extraterrestrial_radiation
     
     def select(self, irr_data):
+        print "hi"
         if len(irr_data) <= 1:
             raise InsufficientDataError("At least two data points are needed.")
         # add a column for clear/cloudy
         # TODO: handle lists
+        
         data = append_field(irr_data, ('clear', bool))
-
+       
         prev_row, this_row, next_row = None, None, None
         prev_G, this_G, next_G = None, None, None
         prev_dt, next_dt = None, None
         prev_dirrad, next_dirrad = None, None
         prev_dextra, next_dextra = None, None
-
+        
+      
+            
         for next_row in chain(data, [None]):
 
             # skip if it's nighttime
@@ -119,7 +124,14 @@ class Selector(object):
                     change = max(change, abs(next_dextra - next_dirrad))
 
                 this_row['clear'] = (change < CHANGE_CONST)
-
+                
+            print 'this row',this_row
+            print 'next row',next_row
+            print 'Prev G', prev_G
+            print 'This G',this_G
+            print 'next G',next_G
+            print 'prev_dt',next_dt
+            
             # shuffle down
             prev_row, this_row = this_row, next_row
             prev_G, this_G = this_G, next_G

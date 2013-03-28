@@ -3,6 +3,9 @@ from numpy import nan
 from rtm import SMARTS
 import rtms
 import pdb
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd 
 
 CONFIG_FILE = open('config.yaml')
 DATA_FILE = open('time-series.csv')
@@ -41,9 +44,9 @@ for config_dict, clear in zip(config_dicts, time_irrad_clear['clear']):
         })
 print "done."
 
-
+'''
 print "Submitting to optimizer for SMARTS..."
-aods = rtms.optimize(optimizeable, site_info, SMARTS, 'angstroms_coefficient')
+aods =np.array(rtms.optimize(optimizeable, site_info, SMARTS, 'angstroms_coefficient'))
 print "optimzed {} points ({:.1%}) of {} selected clear points.".format(
     *((lambda l:((lambda s,t:[s,float(s)/t,t])(l - Counter(aods)[nan],l))
        )(len(aods))))
@@ -51,7 +54,10 @@ print "optimzed {} points ({:.1%}) of {} selected clear points.".format(
 
 print "Interpolating AOD between successful optimizations...",
 optimes = [o['settings']['time'] for o in optimizeable]
-time_aod = [[t, aod] for t, aod in zip(optimes, aods)]
-interp_aods = rtms.interpolate(time_aod)
+time_aod =[[t, aod] for t, aod in zip(optimes, aods)]
+interp_aods =np.array(rtms.interpolate(time_aod))
 print "done."
-pdb.set_trace()
+
+
+
+pdb.set_trace()'''
